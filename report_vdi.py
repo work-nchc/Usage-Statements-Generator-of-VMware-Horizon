@@ -5,14 +5,31 @@ from io_log import qstr_event, qstr_user_events, qstr_config_changes
 
 ip = '172.16.1.15'
 
+def parser(data):
+    return (
+        data['Time'].isoformat(timespec='milliseconds')
+        if 'Time' in data else '',
+        data['UserSID'].lower()
+        if 'UserSID' in data else '',
+        data['DesktopId'].lower()
+        if 'DesktopId' in data else '',
+        data['UserDisplayName'].lower().split('\\')[-1]
+        if 'UserDisplayName' in data else '',
+        data['EntitlementSID'].lower()
+        if 'EntitlementSID' in data else '',
+        data['EntitlementDisplay'].lower().split('\\')[-1]
+        if 'EntitlementDisplay' in data else '',
+        data['MachineId'].lower()
+        if 'MachineId' in data else '',
+    )
+
 # functions using side effects
 
 def enable_pool(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    pool = data['DesktopId'].lower()
-    name_admin = data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
+    timestamp, sid_admin, pool = parser(data)[:3]
+    name_admin = (
+        data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
+        if 'ModuleAndEventText' in data else '')
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -36,11 +53,10 @@ def enable_pool(data):
     return None
 
 def disable_pool(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    pool = data['DesktopId'].lower()
-    name_admin = data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
+    timestamp, sid_admin, pool = parser(data)[:3]
+    name_admin = (
+        data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
+        if 'ModuleAndEventText' in data else '')
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -64,21 +80,18 @@ def disable_pool(data):
     return None
 
 def update_pool(data):
-    if ('(MODIFY: desktopSettings.enabled = true)'
-        in data['ModuleAndEventText']):
-        enable_pool(data)
-    if ('(MODIFY: desktopSettings.enabled = false)'
-        in data['ModuleAndEventText']):
-        disable_pool(data)
+    if 'ModuleAndEventText' in data:
+        if ('(MODIFY: desktopSettings.enabled = true)'
+            in data['ModuleAndEventText']):
+            enable_pool(data)
+        if ('(MODIFY: desktopSettings.enabled = false)'
+            in data['ModuleAndEventText']):
+            disable_pool(data)
     
     return None
 
 def add_pool(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    name_admin = data['UserDisplayName'].lower().split('\\')[-1]
-    pool = data['DesktopId'].lower()
+    timestamp, sid_admin, pool, name_admin = parser(data)[:4]
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -106,11 +119,7 @@ def add_pool(data):
     return None
 
 def remove_pool(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    name_admin = data['UserDisplayName'].lower().split('\\')[-1]
-    pool = data['DesktopId'].lower()
+    timestamp, sid_admin, pool, name_admin = parser(data)[:4]
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -138,13 +147,7 @@ def remove_pool(data):
     return None
 
 def entitle(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    name_admin = data['UserDisplayName'].lower().split('\\')[-1]
-    pool = data['DesktopId'].lower()
-    sid = data['EntitlementSID'].lower()
-    username = data['EntitlementDisplay'].lower().split('\\')[-1]
+    timestamp, sid_admin, pool, name_admin, sid, username = parser(data)[:6]
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -172,13 +175,7 @@ def entitle(data):
     return None
 
 def deprive(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    name_admin = data['UserDisplayName'].lower().split('\\')[-1]
-    pool = data['DesktopId'].lower()
-    sid = data['EntitlementSID'].lower()
-    username = data['EntitlementDisplay'].lower().split('\\')[-1]
+    timestamp, sid_admin, pool, name_admin, sid, username = parser(data)[:6]
     
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -206,13 +203,10 @@ def deprive(data):
     return None
 
 def log_in(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid = data['UserSID'].lower()
-    username = data['UserDisplayName'].lower().split('\\')[-1]
-    pool = data['DesktopId'].lower()
-    vm = data['MachineId'].lower()
-    name_vm = data['ModuleAndEventText'].lower().split()[-1]
+    timestamp, sid, pool, username, *__, vm = parser(data)
+    name_vm = (
+        data['ModuleAndEventText'].lower().split()[-1]
+        if 'ModuleAndEventText' in data else '')
     
     if sid and sid not in username_sid:
         username_sid[sid] = ''
@@ -245,13 +239,11 @@ def log_in(data):
     return None
 
 def log_off(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    pool = data['DesktopId'].lower()
-    vm = data['MachineId'].lower()
+    timestamp, __, pool, *__, vm = parser(data)
     name_vm = (
         data['ModuleAndEventText'].lower()
-        .partition('machine ')[2].partition(' ')[0])
+        .partition('machine ')[2].partition(' ')[0]
+        if 'ModuleAndEventText' in data else '')
 
     if pool and pool not in user_pool:
         user_pool[pool] = set()
@@ -273,19 +265,15 @@ def log_off(data):
     return None
 
 def log_off_user(data):
-    sid = data['UserSID'].lower()
-    vm = data['MachineId'].lower()
+    timestamp, sid, pool, *__, vm = parser(data)
+    name_vm = (
+        data['ModuleAndEventText'].lower().split()[-1]
+        if 'ModuleAndEventText' in data else '')
     
     if sid and sid not in username_sid:
         username_sid[sid] = ''
     if vm and sid and vm in vdi and vdi[vm][2] and vdi[vm][2] != sid:
         err.append(vdi[vm][2] + '\t' + str(data) + '\n')
-    
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    pool = data['DesktopId'].lower()
-    name_vm = data['ModuleAndEventText'].lower().split()[-1]
-
     if pool and pool not in user_pool:
         user_pool[pool] = set()
     if pool and pool not in user_pool_deprived:
@@ -306,12 +294,16 @@ def log_off_user(data):
     return None
 
 def admin_kick(data):
-    time_event = data['Time']
-    timestamp = time_event.isoformat(timespec='milliseconds')
-    sid_admin = data['UserSID'].lower()
-    name_admin = data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
-    name_vm = data['ModuleAndEventText'].lower().split()[-1]
-    username = data['ModuleAndEventText'].lower().split()[4].split('\\')[-1]
+    timestamp, sid_admin = parser(data)[:2]
+    name_admin = (
+        data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
+        if 'ModuleAndEventText' in data else '')
+    name_vm = (
+        data['ModuleAndEventText'].lower().split()[-1]
+        if 'ModuleAndEventText' in data else '')
+    username = (
+        data['ModuleAndEventText'].lower().split()[4].split('\\')[-1]
+        if 'ModuleAndEventText' in data else '')
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
