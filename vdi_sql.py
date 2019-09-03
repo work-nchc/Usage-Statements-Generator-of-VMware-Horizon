@@ -364,19 +364,20 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
         
         with open('vdi.dat') as input_dat:
             for row in input_dat:
-                id_event, *data = row.split('\t')
-                id_event = int(id_event)
-                log_vdi[id_event]['EventID'] = id_event
-                log_vdi[id_event]['EventType'] = data[0]
-                log_vdi[id_event]['Time'] = datetime.strptime(
-                    data[1], '%Y-%m-%dT%H:%M:%S.%f')
-                log_vdi[id_event]['UserSID'] = data[2]
-                log_vdi[id_event]['DesktopId'] = data[3]
-                log_vdi[id_event]['UserDisplayName'] = data[4]
-                log_vdi[id_event]['EntitlementSID'] = data[5]
-                log_vdi[id_event]['EntitlementDisplay'] = data[6]
-                log_vdi[id_event]['MachineId'] = data[7]
-                log_vdi[id_event]['ModuleAndEventText'] = data[-1].strip()
+                if row.strip():
+                    id_event, *data = row.split('\t')
+                    id_event = int(id_event)
+                    log_vdi[id_event]['EventID'] = id_event
+                    log_vdi[id_event]['EventType'] = data[0]
+                    log_vdi[id_event]['Time'] = datetime.strptime(
+                        data[1], '%Y-%m-%dT%H:%M:%S.%f')
+                    log_vdi[id_event]['UserSID'] = data[2]
+                    log_vdi[id_event]['DesktopId'] = data[3]
+                    log_vdi[id_event]['UserDisplayName'] = data[4]
+                    log_vdi[id_event]['EntitlementSID'] = data[5]
+                    log_vdi[id_event]['EntitlementDisplay'] = data[6]
+                    log_vdi[id_event]['MachineId'] = data[7]
+                    log_vdi[id_event]['ModuleAndEventText'] = data[-1].strip()
         
         with open('_vdi.dat', 'w') as output_dat:
             for id_event in sorted(log_vdi):
