@@ -1,35 +1,25 @@
 from getpass import getpass
 from _mssql import connect
 from datetime import datetime
-from io_log import qstr_event, qstr_user_events, qstr_config_changes
-
-ip = '172.16.1.15'
+from shutil import copyfile
+from io_log import ip, qstr_event, qstr_user_events, qstr_config_changes
 
 def parser(data):
     return (
-        data['Time'].isoformat(timespec='milliseconds')
-        if 'Time' in data else '',
-        data['UserSID'].lower()
-        if 'UserSID' in data else '',
-        data['DesktopId'].lower()
-        if 'DesktopId' in data else '',
-        data['UserDisplayName'].lower().split('\\')[-1]
-        if 'UserDisplayName' in data else '',
-        data['EntitlementSID'].lower()
-        if 'EntitlementSID' in data else '',
-        data['EntitlementDisplay'].lower().split('\\')[-1]
-        if 'EntitlementDisplay' in data else '',
-        data['MachineId'].lower()
-        if 'MachineId' in data else '',
+        data['Time'].isoformat(timespec='milliseconds'),
+        data['UserSID'].lower(),
+        data['DesktopId'].lower(),
+        data['UserDisplayName'].lower().split('\\')[-1],
+        data['EntitlementSID'].lower(),
+        data['EntitlementDisplay'].lower().split('\\')[-1],
+        data['MachineId'].lower(),
     )
 
 # functions using side effects
 
 def enable_pool(data):
     timestamp, sid_admin, pool = parser(data)[:3]
-    name_admin = (
-        data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
-        if 'ModuleAndEventText' in data else '')
+    name_admin = data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -54,9 +44,7 @@ def enable_pool(data):
 
 def disable_pool(data):
     timestamp, sid_admin, pool = parser(data)[:3]
-    name_admin = (
-        data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
-        if 'ModuleAndEventText' in data else '')
+    name_admin = data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -80,13 +68,12 @@ def disable_pool(data):
     return None
 
 def update_pool(data):
-    if 'ModuleAndEventText' in data:
-        if ('(MODIFY: desktopSettings.enabled = true)'
-            in data['ModuleAndEventText']):
-            enable_pool(data)
-        if ('(MODIFY: desktopSettings.enabled = false)'
-            in data['ModuleAndEventText']):
-            disable_pool(data)
+    if ('(MODIFY: desktopSettings.enabled = true)'
+        in data['ModuleAndEventText']):
+        enable_pool(data)
+    if ('(MODIFY: desktopSettings.enabled = false)'
+        in data['ModuleAndEventText']):
+        disable_pool(data)
     
     return None
 
@@ -204,9 +191,7 @@ def deprive(data):
 
 def log_in(data):
     timestamp, sid, pool, username, *__, vm = parser(data)
-    name_vm = (
-        data['ModuleAndEventText'].lower().split()[-1]
-        if 'ModuleAndEventText' in data else '')
+    name_vm = data['ModuleAndEventText'].lower().split()[-1]
     
     if sid and sid not in username_sid:
         username_sid[sid] = ''
@@ -242,8 +227,7 @@ def log_off(data):
     timestamp, __, pool, *__, vm = parser(data)
     name_vm = (
         data['ModuleAndEventText'].lower()
-        .partition('machine ')[2].partition(' ')[0]
-        if 'ModuleAndEventText' in data else '')
+        .partition('machine ')[2].partition(' ')[0])
 
     if pool and pool not in user_pool:
         user_pool[pool] = set()
@@ -266,9 +250,7 @@ def log_off(data):
 
 def log_off_user(data):
     timestamp, sid, pool, *__, vm = parser(data)
-    name_vm = (
-        data['ModuleAndEventText'].lower().split()[-1]
-        if 'ModuleAndEventText' in data else '')
+    name_vm = data['ModuleAndEventText'].lower().split()[-1]
     
     if sid and sid not in username_sid:
         username_sid[sid] = ''
@@ -295,15 +277,9 @@ def log_off_user(data):
 
 def admin_kick(data):
     timestamp, sid_admin = parser(data)[:2]
-    name_admin = (
-        data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
-        if 'ModuleAndEventText' in data else '')
-    name_vm = (
-        data['ModuleAndEventText'].lower().split()[-1]
-        if 'ModuleAndEventText' in data else '')
-    username = (
-        data['ModuleAndEventText'].lower().split()[4].split('\\')[-1]
-        if 'ModuleAndEventText' in data else '')
+    name_admin = data['ModuleAndEventText'].lower().split()[0].split('\\')[-1]
+    name_vm = data['ModuleAndEventText'].lower().split()[-1]
+    username = data['ModuleAndEventText'].lower().split()[4].split('\\')[-1]
 
     if sid_admin and sid_admin not in username_sid:
         username_sid[sid_admin] = ''
@@ -376,7 +352,7 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
                         else:
                             err.append(state)
 
-    # Log Filtering
+    # Log Querying
     log_vdi = {}
     def update_log(qstr):
         conn.execute_query(qstr)
@@ -389,7 +365,48 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
     update_log(qstr_event)
     update_log(qstr_user_events)
     update_log(qstr_config_changes)
-
+        
+    with open('vdi.dat') as input_dat:
+        for row in input_dat:
+            id_event, *data = row.split('\t')
+            id_event = int(id_event)
+            log_vdi[id_event]['EventID'] = id_event
+            log_vdi[id_event]['EventType'] = data[0]
+            log_vdi[id_event]['Time'] = datetime.strptime(
+                data[1], '%Y-%m-%dT%H:%M:%S.%f')
+            log_vdi[id_event]['UserSID'] = data[2]
+            log_vdi[id_event]['DesktopId'] = data[3]
+            log_vdi[id_event]['UserDisplayName'] = data[4]
+            log_vdi[id_event]['EntitlementSID'] = data[5]
+            log_vdi[id_event]['EntitlementDisplay'] = data[6]
+            log_vdi[id_event]['MachineId'] = data[7]
+            log_vdi[id_event]['ModuleAndEventText'] = data[-1].strip()
+    
+    with open('_vdi.dat', 'w') as output_dat:
+        for id_event in sorted(log_vdi):
+            output_dat.write(str(id_event) + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'EventType', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'Time', datetime(1, 1, 1)
+                ).isoformat(timespec='milliseconds') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'UserSID', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'DesktopId', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'UserDisplayName', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'EntitlementSID', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'EntitlementDisplay', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'MachineId', '') + '\t')
+            output_dat.write(log_vdi[id_event].setdefault(
+                'ModuleAndEventText', '') + '\n')
+    
+    copyfile('_vdi.dat', 'vdi.dat')
+    
     # Log Parsing
     {
         func_type[log_vdi[id_event]['EventType']](log_vdi[id_event])

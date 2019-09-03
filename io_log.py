@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import mkdir, walk, replace
+from shutil import copyfile
 
 __all__ = (
     'time_begin_all',
@@ -11,9 +12,9 @@ __all__ = (
     'output_all',
 )
 
-time_begin_all = datetime(2019, 3, 1)
+time_begin_all = datetime(2019, 4, 1)
 ip = '172.16.1.15'
-filename_state = '201902_filtered.sav'
+filename_state = '201903_filtered.sav'
 
 qstr_event = (
     'SELECT '
@@ -56,6 +57,7 @@ qstr_config_changes = (
         'EventID, '
         'EventType, '
         'Time, '
+        'ModuleAndEventText, '
         'UserDisplayName, '
         'UserSID, '
         'DesktopId, '
@@ -185,5 +187,10 @@ def output_all(
             replace('temp/' + filename, dst)
         except OSError:
             pass
-
+    copyfile('_vdi.dat', 'back.dat')
+    try:
+        replace('_vdi.dat', 'vdi.dat')
+    except OSError:
+        pass
+    
     return None
