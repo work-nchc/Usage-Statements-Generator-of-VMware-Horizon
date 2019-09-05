@@ -132,7 +132,7 @@ def output_all(
         pass
     
     for username in report_users:
-        with open('temp/{}.csv'.format(username), 'w') as output_user:
+        with open('temp/vdi_{}.csv'.format(username), 'w') as output_user:
             {output_user.write('\t'.join(map(str, data)) + '\n')
              for data in report_users[username]}
 
