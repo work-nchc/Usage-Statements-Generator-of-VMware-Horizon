@@ -16,4 +16,4 @@ Routine Reporting
 PATH/TO/python.exe vdi_sql.py
 ```
 
-Enter username and password.  Usage statement of each user will present in folder /users, updated in real-time, 
+Enter username and password.  Usage statement of each user will present in folder /users, updated in real-time, and 4 other files, 
