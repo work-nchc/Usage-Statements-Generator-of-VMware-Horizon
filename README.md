@@ -16,4 +16,4 @@ Routine Reporting
 PATH/TO/python.exe vdi_sql.py
 ```
 
-Enter username and password.  Usage statement of each user will present in directory /users, updated in real-time, listing log-in time, log-off time, duration in hour, pool, SU per hour and SU.  There will also be report.log, error.log, state.sav, entitlement.log, pool.log in current directory.
+Enter username and password.  Usage statement of each user will present in directory ./users, updated in real-time, listing log-in time, log-off time, duration in hour, pool, SU per hour and SU.  There will also be report.log, error.log, state.sav, entitlement.log, pool.log in working directory.
