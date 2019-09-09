@@ -314,9 +314,9 @@ func_type = {
 
 with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
     time_begin_all = datetime.strptime(
-        input('date begin YYYY-mm-dd (included): '), '%Y-%m-%d')
+        input('beginning date YYYY-mm-dd (included): '), '%Y-%m-%d')
     time_end_all = datetime.strptime(
-        input('date end YYYY-mm-dd (excluded): '), '%Y-%m-%d')
+        input('ending date YYYY-mm-dd (excluded): '), '%Y-%m-%d')
     filename_state = input('state file: ')
     filename = input('output base name: ')
     
