@@ -7,19 +7,25 @@ Dependency: pymssql
 Tested in Python 3.6
 
 ---
-Configure begin time, database ip, state file, query strings in io_log.py, and the SU per hour for each pool in suph.csv first.
+Configure beginning time, database ip, state file, query strings in io_log.py, and the SU per hour for each pool in suph.csv first.
 
 ---
-Routine Reporting
+Routine Reporting:
 
 ```
 PATH/TO/python.exe vdi_sql.py
 ```
 
-Enter username and password.  Usage statement of each user will present in directory ./users, updated in real-time, listing log-in time, log-off time, duration in hour, pool, SU per hour and SU.  There will also be report.log, error.log, state.sav, entitlement.log, pool.log in working directory.  The execution time will be printed on the standard output.
+Enter username and password.  Usage statement of each user will present in directory ./users, updated in real-time, listing log-in time, log-off time, duration in hour, pool, SU per hour, and SU.  There will also be report.log, error.log, state.sav, entitlement.log, pool.log in working directory.  The execution time will be printed on the standard output.
 
 ---
+One-off Reporting:
 
+```
+PATH/TO/python.exe report_vdi.py
+```
+
+Enter username, password, beginning date, ending date, initial vdi state file, and output base name.
 
 ---
 1803031@narlabs.org.tw
