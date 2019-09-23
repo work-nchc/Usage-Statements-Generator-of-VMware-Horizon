@@ -102,6 +102,8 @@ def output_all(
         if time_begin > time_end:
             time_end = time_begin
         dur = (time_end - time_begin).total_seconds() // 0.036 / 100000
+        if pool not in suph_pool:
+            suph_pool[pool] = 80.0
         su = round(dur * suph_pool[pool], 8)
         report_users[username].append((
             begin, end, dur, pool, suph_pool[pool], su))
@@ -117,6 +119,8 @@ def output_all(
             if time_begin > time_end:
                 time_end = time_begin
             dur = (time_end - time_begin).total_seconds() // 0.036 / 100000
+            if pool not in suph_pool:
+                suph_pool[pool] = 80.0
             su = round(dur * suph_pool[pool], 8)
             report_users[username].append((
                 begin, '', dur, pool, suph_pool[pool], su))
