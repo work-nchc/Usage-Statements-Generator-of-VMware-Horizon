@@ -7,7 +7,7 @@ Dependency: pymssql
 Tested in Python 3.6
 
 ---
-Configure beginning time, database ip, state file, query strings in io_log.py, and the SU per hour for each pool in suph.csv first.
+Configure beginning time, database ip, state file, query strings in io_log.py, and the SU per hour for each pool in suph.csv first.  Raw log will be stored in vdi.dat.
 
 ---
 Routine Reporting:
