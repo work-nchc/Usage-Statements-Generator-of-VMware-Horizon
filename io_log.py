@@ -180,8 +180,10 @@ def output_all(
     
     with open('temp/pool.log', 'w') as output_pool:
         output_pool.write('\n'.join(pools_all))
-    
-    temp = sorted(next(walk('temp'))[2])
+    try:
+        temp = sorted(next(walk('temp'))[2])
+    except StopIteration:
+        pass
     for filename in temp:
         if '.csv' == filename[-4:]:
             dst = 'users/' + filename
