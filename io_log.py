@@ -136,34 +136,46 @@ def output_all(
         pass
     
     for username in report_users:
-        with open('temp/vdi_{}.csv'.format(username), 'w') as output_user:
-            {output_user.write('\t'.join(map(str, data)) + '\n')
-             for data in report_users[username]}
-
-    with open('temp/report.log', 'w') as output_report:
-        output_report.writelines(report)
-
-    with open('temp/error.log', 'w') as output_err:
-        output_err.writelines(err)
-
-    with open('temp/state.sav', 'w') as output_state:
-        output_state.write('pools_enabled\t{}\n'.format(
-            '\t'.join(sorted(pools_enabled))))
-        output_state.write('pools_disabled\t{}\n'.format(
-            '\t'.join(sorted(pools_disabled))))
-        {output_state.write('username_sid\t{}\t{}\n'.format(
-            sid, username_sid[sid])) for sid in sorted(username_sid)}
-        {output_state.write('user_pool\t{}\t{}\n'.format(
-            pool, '\t'.join(sorted(user_pool[pool]))))
-         for pool in sorted(user_pool)}
-        {output_state.write('user_pool_deprived\t{}\t{}\n'.format(
-            pool, '\t'.join(sorted(user_pool_deprived[pool]))))
-         for pool in sorted(user_pool_deprived)}
-        {output_state.write('vdi\t{}\t{}\n'.format(vm, '\t'.join(vdi[vm])))
-         for vm in sorted(vdi)}
-
+        try:
+            with open('temp/vdi_{}.csv'.format(username), 'w') as output_user:
+                {output_user.write('\t'.join(map(str, data)) + '\n')
+                 for data in report_users[username]}
+        except OSError:
+            pass
+    
+    try:
+        with open('temp/report.log', 'w') as output_report:
+            output_report.writelines(report)
+    except OSError:
+        pass
+    
+    try:
+        with open('temp/error.log', 'w') as output_err:
+            output_err.writelines(err)
+    except OSError:
+        pass
+    
+    try:
+        with open('temp/state.sav', 'w') as output_state:
+            output_state.write('pools_enabled\t{}\n'.format(
+                '\t'.join(sorted(pools_enabled))))
+            output_state.write('pools_disabled\t{}\n'.format(
+                '\t'.join(sorted(pools_disabled))))
+            {output_state.write('username_sid\t{}\t{}\n'.format(
+                sid, username_sid[sid])) for sid in sorted(username_sid)}
+            {output_state.write('user_pool\t{}\t{}\n'.format(
+                pool, '\t'.join(sorted(user_pool[pool]))))
+             for pool in sorted(user_pool)}
+            {output_state.write('user_pool_deprived\t{}\t{}\n'.format(
+                pool, '\t'.join(sorted(user_pool_deprived[pool]))))
+             for pool in sorted(user_pool_deprived)}
+            {output_state.write('vdi\t{}\t{}\n'.format(vm, '\t'.join(vdi[vm])))
+             for vm in sorted(vdi)}
+    except OSError:
+        pass
+    
     entitle = {sid: [''] * len(pools_all) for sid in username_sid}
-
+    
     for pool in pools_all:
         if pool in user_pool:
             for sid in user_pool[pool]:
@@ -171,15 +183,23 @@ def output_all(
         if pool in user_pool_deprived:
             for sid in user_pool_deprived[pool]:
                 entitle[sid][pools_all.index(pool)] = '#' + pool
-
-    with open('temp/entitlement.log', 'w') as output_entitle:
-        output_entitle.write('\t'.join(['sid', 'username'] + pools_all) + '\n')
-        {output_entitle.write(
-            '\t'.join([sid, username_sid[sid]] + entitle[sid]) + '\n')
-         for sid in sorted(username_sid)}
     
-    with open('temp/pool.log', 'w') as output_pool:
-        output_pool.write('\n'.join(pools_all))
+    try:
+        with open('temp/entitlement.log', 'w') as output_entitle:
+            output_entitle.write(
+                '\t'.join(['sid', 'username'] + pools_all) + '\n')
+            {output_entitle.write(
+                '\t'.join([sid, username_sid[sid]] + entitle[sid]) + '\n')
+             for sid in sorted(username_sid)}
+    except OSError:
+        pass
+    
+    try:
+        with open('temp/pool.log', 'w') as output_pool:
+            output_pool.write('\n'.join(pools_all))
+    except OSError:
+        pass
+    
     try:
         temp = sorted(next(walk('temp'))[2])
     except StopIteration:
