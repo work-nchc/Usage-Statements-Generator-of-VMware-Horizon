@@ -372,6 +372,8 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
             if row.strip():
                 id_event, *data = row.split('\t')
                 id_event = int(id_event)
+                if id_event not in log_vdi:
+                    log_vdi[id_event] = {}
                 log_vdi[id_event]['EventID'] = id_event
                 log_vdi[id_event]['EventType'] = data[0]
                 log_vdi[id_event]['Time'] = datetime.strptime(
