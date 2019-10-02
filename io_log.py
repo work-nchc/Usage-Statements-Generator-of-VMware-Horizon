@@ -200,6 +200,7 @@ def output_all(
     except OSError:
         pass
     
+    temp = []
     try:
         temp = sorted(next(walk('temp'))[2])
     except StopIteration:
