@@ -1,5 +1,5 @@
 from getpass import getpass
-from pymssql import connect
+from _mssql import connect
 from datetime import datetime
 from shutil import copyfile
 from io_log import ip, qstr_event, qstr_user_events, qstr_config_changes
@@ -355,9 +355,8 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
     # Log Querying
     log_vdi = {}
     def update_log(qstr):
-        cursor = conn.cursor(True)
-        cursor.execute(qstr)
-        for row in cursor:
+        conn.execute_query(qstr)
+        for row in conn:
             for key in row:
                 if None == row[key]:
                     row[key] = ''
