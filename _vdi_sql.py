@@ -1,6 +1,6 @@
 from getpass import getpass
 from _mssql import connect
-from time import time
+from time import time, ctime
 from datetime import datetime
 from io_log import *
 
@@ -440,4 +440,4 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
             time_end_all,
         )
         
-        print('\r\t\t\t', round(time() - t, 3), end='     ')
+        print('\r\t\t\t', round(time() - t, 3), ctime(), end='     ')
