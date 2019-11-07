@@ -376,32 +376,32 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
                     log_vdi[id_event] = {}
                 log_vdi[id_event]['EventID'] = id_event
                 if (data[0] or
-                        'EventType' not in log_vdi[id_event]):
-                        log_vdi[id_event]['EventType'] = data[0]
-                    log_vdi[id_event]['Time'] = datetime.strptime(
-                        data[1], '%Y-%m-%dT%H:%M:%S.%f')
-                    if (data[2] or
-                        'UserSID' not in log_vdi[id_event]):
-                        log_vdi[id_event]['UserSID'] = data[2]
-                    if (data[3] or
-                        'DesktopId' not in log_vdi[id_event]):
-                        log_vdi[id_event]['DesktopId'] = data[3]
-                    if (data[4] or
-                        'UserDisplayName' not in log_vdi[id_event]):
-                        log_vdi[id_event]['UserDisplayName'] = data[4]
-                    if (data[5] or
-                        'EntitlementSID' not in log_vdi[id_event]):
-                        log_vdi[id_event]['EntitlementSID'] = data[5]
-                    if (data[6] or
-                        'EntitlementDisplay' not in log_vdi[id_event]):
-                        log_vdi[id_event]['EntitlementDisplay'] = data[6]
-                    if (data[7] or
-                        'MachineId' not in log_vdi[id_event]):
-                        log_vdi[id_event]['MachineId'] = data[7]
-                    data[-1] = data[-1].strip()
-                    if (data[-1] or
-                        'ModuleAndEventText' not in log_vdi[id_event]):
-                        log_vdi[id_event]['ModuleAndEventText'] = data[-1]
+                    'EventType' not in log_vdi[id_event]):
+                    log_vdi[id_event]['EventType'] = data[0]
+                log_vdi[id_event]['Time'] = datetime.strptime(
+                    data[1], '%Y-%m-%dT%H:%M:%S.%f')
+                if (data[2] or
+                    'UserSID' not in log_vdi[id_event]):
+                    log_vdi[id_event]['UserSID'] = data[2]
+                if (data[3] or
+                    'DesktopId' not in log_vdi[id_event]):
+                    log_vdi[id_event]['DesktopId'] = data[3]
+                if (data[4] or
+                    'UserDisplayName' not in log_vdi[id_event]):
+                    log_vdi[id_event]['UserDisplayName'] = data[4]
+                if (data[5] or
+                    'EntitlementSID' not in log_vdi[id_event]):
+                    log_vdi[id_event]['EntitlementSID'] = data[5]
+                if (data[6] or
+                    'EntitlementDisplay' not in log_vdi[id_event]):
+                    log_vdi[id_event]['EntitlementDisplay'] = data[6]
+                if (data[7] or
+                    'MachineId' not in log_vdi[id_event]):
+                    log_vdi[id_event]['MachineId'] = data[7]
+                data[-1] = data[-1].strip()
+                if (data[-1] or
+                    'ModuleAndEventText' not in log_vdi[id_event]):
+                    log_vdi[id_event]['ModuleAndEventText'] = data[-1]
     
     with open('_vdi.dat', 'w') as output_dat:
         for id_event in sorted(log_vdi):
