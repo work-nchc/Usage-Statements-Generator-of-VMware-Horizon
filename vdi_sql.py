@@ -1,8 +1,10 @@
 from getpass import getpass
 from pymssql import connect
-from time import time, ctime()
+from time import time, ctime, sleep
 from datetime import datetime
 from io_log import *
+
+sec_sleep = 60
 
 def parser(data):
     return (
@@ -442,3 +444,4 @@ with connect(ip, input(': '), getpass(''), database='Horizon_Event') as conn:
         )
         
         print('\r\t\t\t', round(time() - t, 3), ctime(), end='     ')
+        sleep(sec_sleep)
